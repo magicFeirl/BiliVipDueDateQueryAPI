@@ -27,3 +27,6 @@ https://5pdfwb.deta.dev/vip?uid=2
 }
 ```
 
+### 本地运行
+
+确保你安装了 docker 和 docker-compose，在项目根文件夹下输入`docker-compose up`构建并运行项目，然后访问: https://127.0.0.1:8000/vip?uid=2
