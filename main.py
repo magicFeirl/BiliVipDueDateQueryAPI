@@ -7,8 +7,19 @@ from aiohttp import ClientSession
 from datetime import datetime
 
 app = FastAPI()
+session = None
 
 TIME_ZONE = pytz.timezone('Asia/Shanghai')
+
+@app.on_event('startup')
+async def on_start():
+    global session
+    session = ClientSession()
+
+
+@app.on_event('shutdown')
+async def on_shutdown():
+    await session.close()
 
 @app.get('/vip', response_model=VipDueDate)
 async def get_vip_due_date(uid: str):
@@ -16,17 +27,16 @@ async def get_vip_due_date(uid: str):
     headers = {'user-agent': 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36 Edg/90.0.818.62'}
 
     try:
-        async with ClientSession() as session:
-            async with session.get(api, headers=headers, timeout=10) as resp:
-                ret = await resp.json()
+        async with session.get(api, headers=headers, timeout=10) as resp:
+            ret = await resp.json()
     except Exception as e:
         print(e)
 
     code = ret['code']
-   
+
     if code != 0:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=ret)
-    
+
     card = ret['data']['card']
 
     vip = card['vip']
